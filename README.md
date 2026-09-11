@@ -37,7 +37,7 @@ src/com/nexabank/
 ├── exception/   → Exceptions personnalisées
 └── main/        → Point d'entrée (Main), menus console, données de test (InitDonnees)
 
-uml/             → Diagrammes UML (.puml) : classes, cas d'utilisation, séquence
+uml/             → Diagrammes UML (.jpg) : classes, cas d'utilisation, séquence
 ```
 
 ## Lancer l'application
