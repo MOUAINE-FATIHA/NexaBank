@@ -32,6 +32,11 @@ public class Client extends Personne {
     }
 
     public String consulterReleve(String numCompte) throws ErreurFichierException {
+        Compte compte = comptes.get(numCompte);
+        if (compte == null) {
+            throw new IllegalArgumentException("Compte introuvable pour ce client.");
+        }
+        return GestionnaireFichier.lireReleve(compte.getNumCompte());
     }
 
     @Override
