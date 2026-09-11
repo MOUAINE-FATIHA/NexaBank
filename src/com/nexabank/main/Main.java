@@ -1,5 +1,10 @@
 package com.nexabank.main;
+import com.nexabank.exception.CompteInexistantException;
+import com.nexabank.exception.ErreurFichierException;
+import com.nexabank.exception.MontantInvalideException;
+import com.nexabank.exception.SoldeInsuffisantException;
 import com.nexabank.model.*;
+import com.nexabank.service.GestionnaireFichier;
 import java.util.List;
 import java.util.Scanner;
 
@@ -80,4 +85,103 @@ public class Main {
         return null;
     }
 
+    private static void actionConsulterSolde(Client client) {
+        try {
+            Compte compte = trouverCompte(client);
+            System.out.println("Solde du compte " + compte.getNumCompte() + " : " + compte.getSolde() + " €");
+        } catch (CompteInexistantException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+    }
+
+    private static void actionDeposer(Client client) {
+        try {
+            Compte compte = trouverCompte(client);
+            System.out.print("Montant à déposer : ");
+            double montant = Double.parseDouble(scanner.nextLine());
+
+            compte.deposer(montant);
+            System.out.println("Dépôt effectué. Nouveau solde : " + compte.getSolde() + " €");
+
+        } catch (CompteInexistantException | MontantInvalideException | ErreurFichierException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Erreur : veuillez saisir un montant valide (nombre).");
+        }
+    }
+
+    private static void actionRetirer(Client client) {
+        try {
+            Compte compte = trouverCompte(client);
+            System.out.print("Montant à retirer : ");
+            double montant = Double.parseDouble(scanner.nextLine());
+
+            compte.retirer(montant);
+            System.out.println("Retrait effectué. Nouveau solde : " + compte.getSolde() + " €");
+
+        } catch (CompteInexistantException | MontantInvalideException | SoldeInsuffisantException | ErreurFichierException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Erreur : veuillez saisir un montant valide (nombre).");
+        }
+    }
+
+    private static void actionVirement(Client client) {
+        try {
+            Compte compteSource = trouverCompte(client);
+
+            System.out.print("Numéro du compte destination : ");
+            String numDestination = scanner.nextLine();
+            Compte compteDestination = trouverCompteParNumero(numDestination);
+
+            System.out.print("Montant à virer : ");
+            double montant = Double.parseDouble(scanner.nextLine());
+
+            compteSource.virement(compteDestination, montant);
+            System.out.println("Virement effectué. Nouveau solde du compte source : " + compteSource.getSolde() + " €");
+
+        } catch (CompteInexistantException | MontantInvalideException | SoldeInsuffisantException | ErreurFichierException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Erreur : veuillez saisir un montant valide (nombre).");
+        }
+    }
+
+    private static void actionConsulterReleve(Client client) {
+        try {
+            Compte compte = trouverCompte(client);
+            String releve = GestionnaireFichier.lireReleve(compte.getNumCompte());
+
+            if (releve.isEmpty()) {
+                System.out.println("Aucune transaction enregistrée pour ce compte.");
+            } else {
+                System.out.println("--- Relevé du compte " + compte.getNumCompte() + " ---");
+                System.out.println(releve);
+            }
+
+        } catch (CompteInexistantException | ErreurFichierException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+    }
+
+    private static Compte trouverCompte(Client client) throws CompteInexistantException {
+        System.out.print("Numéro de compte : ");
+        String numCompte = scanner.nextLine();
+
+        Compte compte = client.getComptes().get(numCompte);
+        if (compte == null) {
+            throw new CompteInexistantException("Aucun compte trouvé avec ce numéro pour ce client.");
+        }
+        return compte;
+    }
+
+    private static Compte trouverCompteParNumero(String numCompte) throws CompteInexistantException {
+        for (Client c : clients) {
+            Compte compte = c.getComptes().get(numCompte);
+            if (compte != null) {
+                return compte;
+            }
+        }
+        throw new CompteInexistantException("Aucun compte trouvé avec ce numéro : " + numCompte);
+    }
 }
