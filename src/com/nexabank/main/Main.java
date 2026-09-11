@@ -184,4 +184,133 @@ public class Main {
         }
         throw new CompteInexistantException("Aucun compte trouvé avec ce numéro : " + numCompte);
     }
+
+
+    //fonctionnalitees de cote gestionnaire
+    private static void menuGestionnaire() {
+        System.out.print("Email : ");
+        String email = scanner.nextLine();
+        System.out.print("Mot de passe : ");
+        String password = scanner.nextLine();
+
+        if (!gestionnaire.seConnecter(email, password)) {
+            System.out.println("Email ou mot de passe incorrect.");
+            return;
+        }
+
+        System.out.println("Connexion réussie. Bienvenue " + gestionnaire.getPrenom() + " !");
+
+        boolean retourMenuPrincipal = false;
+        while (!retourMenuPrincipal) {
+            System.out.println("\n--- Menu Gestionnaire ---");
+            System.out.println("1. Créer un compte pour un client");
+            System.out.println("2. Clôturer un compte");
+            System.out.println("3. Mettre à jour les informations d'un client");
+            System.out.println("4. Consulter le relevé d'un client");
+            System.out.println("5. Retour au menu principal");
+            System.out.print("Votre choix : ");
+
+            String choix = scanner.nextLine();
+
+            switch (choix) {
+                case "1" -> actionCreerCompte();
+                case "2" -> actionCloturerCompte();
+                case "3" -> actionMettreAJourClient();
+                case "4" -> actionConsulterReleveGestionnaire();
+                case "5" -> retourMenuPrincipal = true;
+                default -> System.out.println("Choix invalide, réessayez.");
+            }
+        }
+    }
+
+    private static void actionCreerCompte() {
+        try {
+            Client client = trouverClientParId();
+
+            System.out.print("Numéro du nouveau compte : ");
+            int numCompte = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("Type de compte (Courant / Epargne) : ");
+            String typeCompte = scanner.nextLine();
+
+            Compte compte = gestionnaire.creerCompte(client, typeCompte, numCompte);
+            System.out.println("Compte créé avec succès : " + compte);
+
+        } catch (CompteInexistantException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Erreur : le numéro de compte doit être un nombre.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+    }
+
+    private static void actionCloturerCompte() {
+        try {
+            Client client = trouverClientParId();
+
+            System.out.print("Numéro du compte à clôturer : ");
+            String numCompte = scanner.nextLine();
+
+            gestionnaire.cloturerCompte(client, numCompte);
+            System.out.println("Compte clôturé avec succès.");
+
+        } catch (CompteInexistantException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+    }
+
+    private static void actionMettreAJourClient() {
+        try {
+            Client client = trouverClientParId();
+
+            System.out.print("Nouveau nom : ");
+            String nom = scanner.nextLine();
+            System.out.print("Nouveau prénom : ");
+            String prenom = scanner.nextLine();
+            System.out.print("Nouvel email : ");
+            String email = scanner.nextLine();
+
+            gestionnaire.mettreAJourClient(client, nom, prenom, email);
+            System.out.println("Informations mises à jour avec succès.");
+
+        } catch (CompteInexistantException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+    }
+
+    private static void actionConsulterReleveGestionnaire() {
+        try {
+            Client client = trouverClientParId();
+
+            System.out.print("Numéro du compte : ");
+            String numCompte = scanner.nextLine();
+
+            String releve = gestionnaire.consulterReleve(client, numCompte);
+
+            if (releve.isEmpty()) {
+                System.out.println("Aucune transaction enregistrée pour ce compte.");
+            } else {
+                System.out.println("--- Relevé du compte " + numCompte + " ---");
+                System.out.println(releve);
+            }
+
+        } catch (CompteInexistantException | ErreurFichierException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+    }
+
+    private static Client trouverClientParId() throws CompteInexistantException {
+        System.out.print("ID du client : ");
+        int idClient = Integer.parseInt(scanner.nextLine());
+
+        for (Client c : clients) {
+            if (c.getIdClient() == idClient) {
+                return c;
+            }
+        }
+        throw new CompteInexistantException("Aucun client trouvé avec cet identifiant.");
+    }
 }
