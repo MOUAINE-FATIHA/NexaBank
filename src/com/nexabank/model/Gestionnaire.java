@@ -37,6 +37,12 @@ public class Gestionnaire extends Personne {
         client.setPrenom(prenom);
         client.setEmail(email);
     }
+    public String consulterReleve(Client client, String numCompte) throws ErreurFichierException {
+        return client.consulterReleve(numCompte);
+    }
+
+
+
     @Override
     public String toString() {
         return "Gestionnaire{" +
